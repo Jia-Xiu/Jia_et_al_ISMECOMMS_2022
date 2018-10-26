@@ -1,0 +1,232 @@
+
+# load QIIME2
+module load QIIME2/2018.2; qiime
+
+# enable tab completion in Bash
+source tab-qiime
+
+# Import data
+qiime tools import \
+  --type EMPPairedEndSequences \
+  --input-path cdna-paired-end-sequences \
+  --output-path cdna-paired-end-sequences.qza
+
+# validate map file by keemei 
+
+# demultiplex the sequence reads
+qiime demux emp-paired \
+  --m-barcodes-file sample-metadata.tsv \
+  --m-barcodes-column BarcodeSequence \
+  --i-seqs cdna-paired-end-sequences.qza \
+  --o-per-sample-sequences demux \
+
+
+# view a summary the umber of sequences were obtained per sample.
+qiime demux summarize \
+  --i-data demux.qza \
+  --o-visualization demux.qzv
+
+# DADA2 sequence quality control
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs demux.qza \
+  --o-table table-dada2.qza \
+  --o-representative-sequences rep-seqs-dada2.qza \
+  --p-trim-left-f 12 \
+  --p-trim-left-r 12 \
+  --p-trunc-len-f 150 \
+  --p-trunc-len-r 150
+
+# FeatureTable and FeatureData summarize
+qiime feature-table summarize \
+  --i-table table.qza \
+  --o-visualization table.qzv \
+  --m-sample-metadata-file sample-metadata.tsv
+
+qiime feature-table tabulate-seqs \
+  --i-data rep-seqs.qza \
+  --o-visualization rep-seqs.qzv
+
+# Generate a tree for phylogenetic diversity analysis
+# multiple sequence alignment
+qiime alignment mafft \
+  --i-sequences rep-seqs.qza \
+  --o-alignment aligned-rep-seqs.qza
+
+# mask/filter the alignment to remove positions that are highly variable
+qiime alignment mask \
+  --i-alignment aligned-rep-seqs.qza \
+  --o-masked-alignment masked-aligned-rep-seqs.qza
+
+# generate a phylogenetic tree from the masked alighment
+qiime phylogeny fasttree \
+  --i-alignment masked-aligned-rep-seqs.qza \
+  --o-tree unrooted-tree.qza
+
+# place the root of the tree at the midpoint of the longest tip-to-tip distance in the unrooted tree
+qiime phylogeny midpoint-root \
+  --i-tree unrooted-tree.qza \
+  --o-rooted-tree rooted-tree.qza
+
+# exporting a phylogenetic tree (newick formatted file)
+qiime tools export \
+  rooted-tree.qza \
+  --output-dir exported-tree 
+
+# alpha and beta diversity analysis
+qiime diversity core-metrics-phylogenetic \
+  --i-phylogeny rooted-tree.qza \
+  --i-table table.qza \
+  --p-sampling-depth 31898 \
+  --m-metadata-file sample-metadata.tsv \ 
+  --output-dir core-metrics-results 
+
+# alpha rarefaction plot
+qiime diversity alpha-rarefaction \
+  --i-table table.qza \
+  --i-phylogeny rooted-tree.qza \
+  --p-max-depth 45000 \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization alpha-rarefaction.qzv
+
+# alpha diversity significant test
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/faith_pd_vector.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization core-metrics-results/faith-pd-group-significance.qzv
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/evenness_vector.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization core-metrics-results/evenness-group-significance.qzv
+
+# beta-diversity significant test
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column Year \
+  --o-visualization core-metrics-results/weighted-unifrac-year-significance.qzv \
+  --p-pairwise
+
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/weighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column Month \
+  --o-visualization core-metrics-results/weighted-unifrac-month--significance.qzv \
+  --p-pairwise
+
+
+# exporting a nontaxa OTU table
+qiime tools export \
+  table.qza \
+  --output-dir nontaxonomic-otu-table 
+
+# convert biom to txt
+biom convert -i nontaxonomic-otu-table/feature-table.biom -o OTU-table-nontax.txt --to-tsv
+
+# QIIME2’s built-in naive Bayesian classifier (which is built on Scikit-learn but similar to RDP), noting that the method, while fast and powerful, has a tendency over-classify reads.
+# Taxonomic analysis
+qiime feature-classifier classify-sklearn \
+  --i-classifier gg-13-8-99-515-806-nb-classifier.qza \
+  --i-reads rep-seqs.qza \
+  --o-classification taxonomy.qza
+
+qiime metadata tabulate \
+  --m-input-file taxonomy.qza \
+  --o-visualization taxonomy.qzv
+
+# view the taxonomic composition with interactive bar plots
+qiime taxa barplot \
+  --i-table table.qza \
+  --i-taxonomy taxonomy.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization taxa-bar-plots.qzv
+
+# make classic OTU table
+ qiime taxa collapse \
+  --i-table table.qza \
+  --i-taxonomy taxonomy.qza \
+  --p-level 6 \
+  --output-dir taxatable/
+
+# exporting a feature table with taxonomic information
+qiime tools export \
+  taxatable/collapsed_table.qza \
+  --output-dir exported-feature-table
+
+biom convert -i exported-feature-table/feature-table.biom -o OTU-table-gg.tsv --to-tsv
+
+# assign taxonomy by Silva
+# Taxonomic analysis
+qiime feature-classifier classify-sklearn \
+  --i-classifier silva-119-99-515-806-nb-classifier.qza \
+  --i-reads rep-seqs.qza \
+  --o-classification taxonomy-silva.qza
+
+qiime metadata tabulate \
+  --m-input-file taxonomy-silva.qza \
+  --o-visualization taxonomy-silva.qzv
+
+# filter represent sequences
+qiime taxa filter-seqs \
+  --i-sequences rep-seqs.qza \
+  --i-taxonomy taxonomy-silva.qza \
+  --p-include p__ \
+  --p-exclude mitochondria,chloroplast \
+  --o-filtered-sequences rep-seqs-filtered.qza
+
+qiime feature-table tabulate-seqs \
+  --i-data rep-seqs-filtered.qza \
+  --o-visualiztion rep-seqs-filtered.qzv
+
+# filter feature table - remove chloroplast and mitochondia
+qiime taxa filter-table \
+  --i-table table.qza \
+  --i-taxonomy taxonomy-silva.qza \
+  --p-include D_1__ \
+  --p-exclude mitochondria,chloroplast \
+  --o-filtered-table table-silva-filtered.qza
+ 
+mkdir extracted-feature-table
+qiime tools extract \
+  table-silva-filtered.qza \
+  --output-dir extracted-feature-table
+
+qiime feature-table summarize \
+  --i-table table-silva-filtered.qza \
+  --o-visualization table-silva-filtered.qzv \
+  --m-sample-metadata-file sample-metadata.tsv
+
+# view the taxonomic composition with interactive bar plots
+qiime taxa barplot \
+  --i-table table-silva-filtered.qza \
+  --i-taxonomy taxonomy.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization taxa-bar-plots-filtered.qzv
+
+# make classic OTU table
+ qiime taxa collapse \
+  --i-table table-silva-filtered.qza \
+  --i-taxonomy taxonomy-silva.qza \
+  --p-level 7 \
+  --output-dir taxatable-silva/
+
+# exporting a feature table with taxonomic information
+qiime tools export \
+  taxatable-silva/collapsed_table.qza \
+  --output-dir exported-feature-table-silva-filtered
+
+biom convert -i exported-feature-table-silva/feature-table.biom -o OTU-table-silva-filtered.tsv --to-tsv
+biom convert -i extracted-feature-table/f8240e34-1053-4072-b787-2492e3c8b89e/data/feature-table.biom -o OTU-table-silva-filtered-2.tsv --to-tsv
+
+# exporting a nontaxa OTU table
+qiime tools export \
+  table-silva-filtered.qza \
+  --output-dir nontaxonomic-otu-table-silva-filtered
+
+# convert biom to txt
+biom convert -i nontaxonomic-otu-table-silva-filtered/feature-table.biom -o OTU-table-silva-filtered-nontax.tsv --to-tsv
+
+# qiime1
+module load QIIME/1.9.1-foss-2016a-Python-2.7.11
+module load h5py/2.7.1-foss-2018a-Python-3.6.4
+biom convert -i nontaxonomic-otu-table-silva-filtered/feature-table.biom -o OTUtable-silva-filtered-nontax.txt --header-key taxonomy --to-tsv

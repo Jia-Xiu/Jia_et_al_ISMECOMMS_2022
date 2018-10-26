@@ -1,0 +1,96 @@
+
+# load QIIME2
+module load QIIME2/2018.2; qiime
+
+# enable tab completion in Bash
+source tab-qiime
+
+# Import data
+qiime tools import \
+  --type EMPPairedEndSequences \
+  --input-path cdna-paired-end-sequences \
+  --output-path cdna-paired-end-sequences.qza
+
+# validate map file by keemei 
+
+# demultiplex the sequence reads
+qiime demux emp-paired \
+  --m-barcodes-file sample-metadata.tsv \
+  --m-barcodes-column BarcodeSequence \
+  --i-seqs cdna-paired-end-sequences.qza \
+  --o-per-sample-sequences demux \
+
+
+# view a summary the umber of sequences were obtained per sample.
+qiime demux summarize \
+  --i-data demux.qza \
+  --o-visualization demux.qzv
+
+# DADA2 sequence quality control
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs demux.qza \
+  --o-table table-dada2.qza \
+  --o-representative-sequences rep-seqs-dada2.qza \
+  --p-trim-left-f 12 \
+  --p-trim-left-r 12 \
+  --p-trunc-len-f 150 \
+  --p-trunc-len-r 150
+
+# FeatureTable and FeatureData summarize
+qiime feature-table summarize \
+  --i-table table.qza \
+  --o-visualization table.qzv \
+  --m-sample-metadata-file sample-metadata.tsv
+
+qiime feature-table tabulate-seqs \
+  --i-data rep-seqs.qza \
+  --o-visualization rep-seqs.qzv
+
+# Generate a tree for phylogenetic diversity analysis
+# multiple sequence alignment
+qiime alignment mafft \
+  --i-sequences rep-seqs.qza \
+  --o-alignment aligned-rep-seqs.qza
+
+# mask/filter the alignment to remove positions that are highly variable
+qiime alignment mask \
+  --i-alignment aligned-rep-seqs.qza \
+  --o-masked-alignment masked-aligned-rep-seqs.qza
+
+# generate a phylogenetic tree from the masked alighment
+qiime phylogeny fasttree \
+  --i-alignment masked-aligned-rep-seqs.qza \
+  --o-tree unrooted-tree.qza
+
+# place the root of the tree at the midpoint of the longest tip-to-tip distance in the unrooted tree
+qiime phylogeny midpoint-root \
+  --i-tree unrooted-tree.qza \
+  --o-rooted-tree rooted-tree.qza
+
+# exporting a phylogenetic tree (newick formatted file)
+qiime tools export \
+  rooted-tree.qza \
+  --output-dir exported-tree 
+
+# exporting a nontaxa OTU table
+qiime tools export \
+  table.qza \
+  --output-dir nontaxonomic-otu-table 
+
+# convert biom to txt
+biom convert -i nontaxonomic-otu-table/feature-table.biom -o OTU-table-nontax.txt --to-tsv
+
+# Taxonomic analysis
+qiime feature-classifier classify-sklearn \
+  --i-classifier silva-119-99-515-806-nb-classifier.qza \
+  --i-reads rep-seqs.qza \
+  --o-classification taxonomy-silva.qza
+
+qiime metadata tabulate \
+  --m-input-file taxonomy-silva.qza \
+  --o-visualization taxonomy-silva.qzv
+  
+# Export taxonomy
+qiime tools export taxonomy-silva.qza --output-dir exported-taxonomy
+cp exported-taxonomy/taxonomy.tsv taxonomy-silva.tsv
+

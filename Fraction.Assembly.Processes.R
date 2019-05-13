@@ -15,8 +15,7 @@ library(dplyr)
 
 
 # load directory --------------------------------------------------------------------------------------------
-directory = 'C:/Users/P278113/Dropbox'
-# directory = '~/Dropbox/'
+directory = '~/Dropbox/'
 subfolder = 'Schier/cDNA'
 
 setwd(paste(directory, subfolder, sep="/"))
@@ -35,7 +34,6 @@ iteration = 999
 
 # all three data sets
 data.set.names = c('wholeDS', 'truncated_ds_dominant', 'truncated_ds_rare_without_dominant')
-#data.set.name = 'truncated_ds_rare_without_dominant'
 
 # a loop to calculte for the assembly processes of each rarity/commonnness type
 for (xx in data.set.names) {

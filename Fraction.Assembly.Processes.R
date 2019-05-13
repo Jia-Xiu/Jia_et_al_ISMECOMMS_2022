@@ -4,12 +4,12 @@
 
 rm(list=ls())
 
-# Load the library
+# Load the libraries
 library(vegan)
 library(ggplot2)
-library(RColorBrewer) #display.brewer.all()
-library(reshape2) # for the boxplot with 
-library(scales) # for pie plot
+library(RColorBrewer) 
+library(reshape2) 
+library(scales)
 library(ggforce)
 library(dplyr)
 

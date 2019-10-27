@@ -15,3 +15,5 @@ Sequences analysis for the DNA and cDNA sequences from 16S amplicon sequencing
 5. Taxa summarize
 
 6. Community Assembly
+> 
+> Fraction.Assembly.Processes_github.R

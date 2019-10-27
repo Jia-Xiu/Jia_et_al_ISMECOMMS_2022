@@ -11,6 +11,7 @@ Sequences analysis for the DNA and cDNA sequences from 16S amplicon sequencing
 > rarity.R
 
 4. Alpha & Beta- Diversity analysis
+> alpha_beta_diversity_github.R
 
 5. Taxa summarize
 

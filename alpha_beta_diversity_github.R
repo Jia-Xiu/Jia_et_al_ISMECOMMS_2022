@@ -174,7 +174,6 @@ df4$Sample <- factor(df4$Sample, levels = c("0_5_A", "0_5_B", "0_5_C", "0_7_A", 
                                             "70_9_A", "70_9_B", "70_9_C", "70_11_A", "70_11_B", "70_11_C",
                                             "110_5_A", "110_5_B", "110_5_C", "110_7_A", "110_7_B", "110_7_C", 
                                             "110_9_A", "110_9_B", "110_9_C", "110_11_A", "110_11_B", "110_11_C"))
-head(df4)
 str(df4)
 
 pd <- position_dodge(0.2)  
@@ -220,29 +219,20 @@ df$Year <- factor(df$Year, levels=c("0", "10", "40", "70", "110"))
 
 df$Month <- factor(df$Month, levels=c("5", "7", "9", "11"), 
                    labels=c("May", "July", "September", "November"))
-head(df)
 
-# explaination values for the first two axis
-a <- round(re$values$Relative_eig[1] * 100, 2)
-b <- round(re$values$Relative_eig[2] * 100, 2)
-
-
-p2 <- ggplot(df, aes(x, y, shape=Month, fill=Year))+
-  geom_point(size=7, alpha=0.7)+ 
-  labs(x=paste("PCoA1 (", a, "%)", sep=""), 
-       y=paste("PCoA2 (", b, "%)", sep=""), 
-       title=distance_method)+
+(p1 <- ggplot(df, aes(x, y, shape=Month, fill=Year))+
+  geom_point(size=5, alpha=0.7)+ #, shape=21
+  labs(x=paste("PCoA1 (", round(re$values$Relative_eig[1] * 100, 2), "%)", sep=""), 
+       y=paste("PCoA2 (", round(re$values$Relative_eig[2] * 100, 2), "%)", sep=""), 
+       title="Jaccard")+
   scale_fill_brewer(palette="Set3", guide=guide_legend(override.aes = list(shape=21)))+
   scale_shape_manual(values=c(24, 22, 23, 21))+ 
-  mytheme
+  mytheme)
 
-p <- ggarrange(p1, p2, labels = c("A", "B"), ncol = 2, nrow = 1 , common.legend = TRUE, legend = "right")
-p
+(p <- ggarrange(p1, p2, labels = c("A", "B"), 
+               ncol = 2, nrow = 1 , common.legend = TRUE, legend = "right"))
 
-ppi=300
-png(paste('PCoA', distance_method, '.png', sep = "_"), width=13*ppi, height=5*ppi,res=ppi)
-print(p)
-dev.off()
+ggsave("PCoA_jaccard_bray.png", width = 14, height = 6, units = "cm", p, scale = 1.5, dpi = 300)
 
 
 

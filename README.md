@@ -1,5 +1,6 @@
-# schier_2018 (updating 12-11-2018)
-Sequences analysis for the DNA and cDNA sequences from 16S amplicon sequencing 
+# Jia_etal_2019 (updating 29-10-2019)
+Sequences analysis for the cDNA sequences from 16S amplicon sequencing &
+The analsysis of the rare biosphere assembly
 
 1. Using QIIME2/2018.2 for cDNA sequences analysis
 > script_cDNA_DADA2_20181026.txt

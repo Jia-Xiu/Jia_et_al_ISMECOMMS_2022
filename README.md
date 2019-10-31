@@ -8,7 +8,7 @@ The analsysis of the rare biosphere assembly
 ## 2. Using R to integrate feature table with taxonomic infomation
 > format_featuretable.R
 
-## 3. Alpha & Beta-diversity analysis for the whole dataset
+## 3. alpha & beta-diversity analysis for the whole dataset
 > alpha_beta_diversity.R
 
 ## 4. The rare and common biosphere analysis 

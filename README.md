@@ -8,14 +8,13 @@ The analsysis of the rare biosphere assembly
 2. Using R to integrate feature table with taxonomic infomation
 > format_featuretable.R
 
-3. Rarity cutoff
-> rarity.R
-
 3. Alpha & Beta- Diversity analysis for the whole dataset
 > alpha_beta_diversity_github.R
 
-4. The rare and common biosphere analysis \n
-4.1 summerize each types of commonness and rarity
+4. The rare and common biosphere analysis 
+# sample-specific rarity cutoffs
+> 
+> Rare_biosphere.R
 > SummarizeCommonnessTypes.R
 > SummarizeRarityTypes.R
 

@@ -12,7 +12,7 @@ The analsysis of the rare biosphere assembly
 > alpha_beta_diversity_github.R
 
 4. The rare and common biosphere analysis 
-# sample-specific rarity cutoffs
+## sample-specific rarity cutoffs
 > 
 > Rare_biosphere.R
 > SummarizeCommonnessTypes.R

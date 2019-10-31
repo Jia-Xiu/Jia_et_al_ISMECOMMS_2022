@@ -13,9 +13,8 @@ The analsysis of the rare biosphere assembly
 
 ## 4. The rare and common biosphere analysis 
 ### sample-specific rarity cutoffs
-> 
 > Rare_biosphere.R
-> SummarizeCommonnessTypes.R
+> SummarizeCommonnessTypes.R；
 > SummarizeRarityTypes.R
 
 ## 5. Taxa summarize

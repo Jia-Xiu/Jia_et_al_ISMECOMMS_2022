@@ -11,8 +11,13 @@ The analsysis of the rare biosphere assembly
 3. Rarity cutoff
 > rarity.R
 
-4. Alpha & Beta- Diversity analysis
+3. Alpha & Beta- Diversity analysis for the whole dataset
 > alpha_beta_diversity_github.R
+
+4. The rare and common biosphere analysis
+>> summerize each types of commonness and rarity
+> SummarizeCommonnessTypes.R
+> SummarizeRarityTypes.R
 
 5. Taxa summarize
 

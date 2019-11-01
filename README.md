@@ -27,3 +27,6 @@ Work at QIIME2/2018.2 environment, using the following script
 ### Community Assembly
 1. Fraction.Assembly.Processes_github.R
 2.
+
+## Authors
+* **Jia, Xiu** 

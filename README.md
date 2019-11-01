@@ -2,27 +2,28 @@
 Sequences analysis for the cDNA sequences from 16S amplicon sequencing &
 The analsysis of the rare biosphere assembly
 
-## 1. Using QIIME2/2018.2 for cDNA sequences analysis
-> script_cDNA_DADA2_20181026.txt
+## Using QIIME2/2018.2 for cDNA sequences analysis
+Work at QIIME2/2018.2 environment, using the following script
+* script_cDNA_DADA2_20181026.txt
 	 
-## 2. Using R to integrate feature table with taxonomic infomation
-> format_featuretable.R
+## Using R for downstream analysis 
 
-## 3. alpha & beta-diversity analysis for the whole dataset
-> alpha_beta_diversity.R
+### Using R to integrate feature table with taxonomic infomation
+* format_featuretable.R
 
-## 4. The rare and common biosphere analysis 
+### alpha & beta-diversity analysis for the whole dataset
+* alpha_beta_diversity.R
 
 ### sample-specific rarity cutoffs
-> sample_specific_rarity_cutoffs.R
+* sample_specific_rarity_cutoffs.R
 
 ### analysis for the rare and common biospheres
-> Rare_biosphere.R; 
-> SummarizeCommonnessTypes.R; 
-> SummarizeRarityTypes.R
+* Rare_biosphere.R; 
+* SummarizeCommonnessTypes.R; 
+* SummarizeRarityTypes.R
 
-## 5. Taxa summarize
+### Taxa summarize
 
-6. Community Assembly
-> 
-> Fraction.Assembly.Processes_github.R
+### Community Assembly
+1. Fraction.Assembly.Processes_github.R
+2.

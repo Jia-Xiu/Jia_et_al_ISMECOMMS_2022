@@ -5,9 +5,9 @@
 # load library
 library(vegan)
 
-# load feature table
-com <- read.csv("schier_cdna_feature_table_dada2_silva_rarefied_taxonomy.csv", sep=",",  header=1, row.names=1)
-com <- t(com[, 1:60])
+# load rarefied feature table
+com <- read.csv(choose.files(), sep=",",  header=1, row.names=1)
+com <- t(com[, 1:60]) # remove columns with taxa information
 str(com)
 
 # calculate Chao1 for estimation of the sequencing depth
@@ -53,7 +53,7 @@ for (j in 1:nrow(df)) {
 df[is.na(df)] <- 0
 df <- df[, colSums(df)!=0] 
 df <- df[, rowSums(df)!=0] 
-write.csv(t(df), "schier_rare_specitic_cutoffs.csv")
+write.csv(t(df), "rare_biosphere_specitic_cutoffs.csv")
 
 # generate the dataset of the common biosphere
 df <- com
@@ -67,4 +67,4 @@ for (j in 1:nrow(df)) {
 df[is.na(df)] <- 0
 df <- df[, colSums(df)!=0] 
 df <- df[, rowSums(df)!=0] 
-write.csv(t(df), "schier_common_specitic_cutoffs.csv")
+write.csv(t(df), "common_biosphere_specitic_cutoffs.csv")

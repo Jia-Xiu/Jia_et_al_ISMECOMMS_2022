@@ -1,3 +1,7 @@
+# Format feature table
+# Author: Xiu Jia
+# Date: 29-10-2018
+
 rm(list=ls())
 
 # load the directory
@@ -15,13 +19,13 @@ library(vegan)
 # No need to run this section anymore!!!
 
 ##########################################################################################################
-df1 <- read.csv("otutable-silva-filtered-nontaxa.csv", row.names=1, header=1, sep=";")
+df1 <- read.csv("feature_table-silva-filtered-nontaxa.csv", row.names=1, header=1, sep=";")
 df2 <- read.csv("taxonomy-silva.csv", row.names=1, header=1, sep=";")
 df <- merge(df1, df2,  by="row.names")  # merge by feature id
 # write.csv(de, "OTU-table-dada2-silva-raw.csv")
 # remove redundant details, e.g. "D_0__", "cloroplast", "mitochondria", etc.
 
-df <- read.csv("otutable-dada2-silva.csv", row.name=1, header=1, sep=";")
+df <- read.csv("feature_table-dada2-silva.csv", row.name=1, header=1, sep=";")
 df2 <- df[ , -which(names(df) %in% c("Kindom","Phylum","Class", "Order", "Family", "Genus", "Species"))]
 str(df2)
 

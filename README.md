@@ -8,25 +8,25 @@ Work at QIIME2/2018.2 environment, using the following script
 	 
 ## Using R for downstream analysis 
 
-### Using R to integrate feature table with taxonomic infomation
+1. Using R to integrate feature table with taxonomic infomation
 * format_featuretable.R
 
-### alpha & beta-diversity analysis for the whole dataset
+2. alpha & beta-diversity analysis for the whole dataset
 * alpha_beta_diversity.R
 
-### sample-specific rarity cutoffs
+3. sample-specific rarity cutoffs
 * sample_specific_rarity_cutoffs.R
 
-### analysis for the rare and common biospheres
+4. analysis for the rare and common biospheres
 * Rare_biosphere.R; 
 * SummarizeCommonnessTypes.R; 
 * SummarizeRarityTypes.R
 
-### Taxa summarize
+5. Taxa summarize
 
-### Community Assembly
-1. Fraction.Assembly.Processes_github.R
-2.
+6. Community Assembly
+* Fraction.Assembly.Processes_github.R
+*
 
 ## Authors
 * **Jia, Xiu** 

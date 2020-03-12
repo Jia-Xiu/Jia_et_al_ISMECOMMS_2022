@@ -12,7 +12,7 @@ Using R to integrate feature table with taxonomic infomation
 * format_featuretable.R
 
 alpha & beta-diversity analysis for the whole dataset
-* [alpha_beta_diversity.R] (https://github.com/Jia-Xiu/Jia_et_al_2019/blob/master/alpha_beta_diversity_github.R)
+* [alpha_beta_diversity.R](https://github.com/Jia-Xiu/Jia_et_al_2019/blob/master/alpha_beta_diversity_github.R)
 
 sample-specific rarity cutoffs
 * sample_specific_rarity_cutoffs.R

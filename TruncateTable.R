@@ -1,6 +1,7 @@
 # Based on Angelique Gobet & Alban Ramette, MultiCoLA Manual - Quick and Easy version (2011) 
-# https://www.mpi-bremen.de/Binaries/Binary1660/MultiCoLA.1.4.-.zip
-# Modified by Xiu Jia at University of Groningen on 01-09-2018
+# Author: https://www.mpi-bremen.de/Binaries/Binary1660/MultiCoLA.1.4.-.zip
+# Modified by Xiu Jia 
+# Date: 01-09-2018
 
 # sample-based cutoff (Gobet at al., 2010)
 TruncateTable<-function(dataset,cutoff,typem){

@@ -13,15 +13,16 @@ Using R to integrate feature table with taxonomic infomation
 alpha & beta-diversity analysis for the whole dataset
 * [alpha_beta_diversity.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/alpha_beta_diversity_github.R)
 
-sample-specific rarity cutoffs
+Sample-specific rarity cutoffs
 * [sample_specific_rarity_cutoffs.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/sample_specific_rarity_cutoffs.R)
 
-analysis for the rare and common biospheres
-* (Rare_biosphere.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/Rare_biosphere.R)
+Analysis for the rare and common biospheres
+* [Rare_biosphere.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/Rare_biosphere.R)
 * [SummarizeCommonnessTypes.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/SummarizeCommonnessTypes.R)
 * [SummarizeRarityTypes.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/SummarizeRarityTypes.R)
 
 Taxa summarize
+* [Taxa_summarize.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/Taxa_summarize.R)
 
 Community Assembly
 * [https://github.com/stegen/Stegen_etal_ISME_2013](https://github.com/stegen/Stegen_etal_ISME_2013)

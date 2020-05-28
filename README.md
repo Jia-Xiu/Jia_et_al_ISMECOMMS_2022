@@ -30,3 +30,4 @@ Community Assembly
 
 ## Authors
 * **Jia, Xiu** 
+* Email: xibeihenai@gmail.com

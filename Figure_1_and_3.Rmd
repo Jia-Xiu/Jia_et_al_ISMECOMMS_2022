@@ -1,0 +1,335 @@
+---
+title: "map of some Europe counties"
+author: "Xiu Jia"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+refer:https://www.datanovia.com/en/blog/how-to-create-a-map-using-ggplot2/
+
+### Initiate libraries
+```{r, message=FALSE, warning=FALSE}
+library(vegan) # for multivariable analysis
+library(ape) # for pcoa 
+library(ggplot2) # for graphing
+library(RColorBrewer) # for color bar
+library(plyr) # for rename
+library(ggpubr) # forcombining figures
+library(VennDiagram) # for venn plot
+library(reshape2) # melt data.frame
+library(doBy) # se function
+display.brewer.all()
+```
+
+### figure theme
+```{r}
+mytheme <- theme_bw()+
+  theme(text = element_text(size=11),
+        legend.box.background = element_rect(),
+        legend.title = element_text(face = "bold"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())  
+
+```
+
+### load dataset
+```{r}
+rm(list=ls())
+
+# load the rarefied otu table
+feature_table <- read.csv("schier_cdna_feature_table_dada2_silva_rarefied_taxonomy.csv", sep=",",  header=1, row.names=1)
+feature_table$Phylum <- gsub("Candidate division ", "", feature_table$Phylum)
+feature_table[feature_table==""] <- NA
+levels(factor(feature_table$Phylum))
+
+wholeDS <- feature_table[, c(1:60)]
+wholeDS <- t(wholeDS)
+str(wholeDS)
+cat("\nthe number of samples is:", nrow(wholeDS), "\nthe number of species/ASVs is:", ncol(wholeDS),
+    "\nrarefied to", rarefactiondepth <- mean(rowSums(wholeDS)), 
+    "\nthe range of sequence number among samples is:", range(rowSums(wholeDS)))
+
+```
+
+
+### define the rare biosphere
+```{r}
+# Calculate the lowest relative abundance (%) of the maximum ESV occurance in all samples
+colMax <- function(data) sapply(data, max, na.rm = TRUE)
+cat("rarity cutoff no more than", round((min(colMax(feature_table[,c(1:60)]))/median(rowSums(wholeDS)))*100,2), "%\n")
+
+# Set the cutoff for rarity
+cutoff = 0.1/100
+
+# source the trucate function
+source("TruncateTable.r") #https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/TruncateTable.R
+
+# The truncated datasets can be stored as follows: 
+truncated_ds_common <-TruncateTable(wholeDS, cutoff, typem="dominant") 
+str(truncated_ds_common)
+#write.csv(t(truncated_ds_common), paste("truncated_ds_common", cutoff, "cutoff.csv", sep="_"))
+
+truncated_ds_rare <-TruncateTable(wholeDS, cutoff, typem="rare") 
+str(truncated_ds_rare)
+#write.csv(t(truncated_ds_rare),  paste("truncated_ds_rare", cutoff, "cutoff.csv", sep="_"))
+
+name.to.keep <- row.names(t(truncated_ds_rare))
+truncated_ds_rare_taxonomy <- subset(feature_table, row.names(feature_table) %in% name.to.keep)
+#write.csv(truncated_ds_rare_taxonomy, paste("truncated_ds_rare_taxonomy", cutoff, "cutoff.csv", sep="_"))
+truncated_ds_conditionally_rare <- truncated_ds_rare_taxonomy[,c(1:60)]
+truncated_ds_conditionally_rare <- t(truncated_ds_conditionally_rare)
+
+```
+
+### combine the rare and common biosphere together
+```{r}
+# rename 
+row.names(truncated_ds_common) <- gsub("cDNA", "common", row.names(truncated_ds_common))
+common <- as.data.frame(t(truncated_ds_common))
+
+row.names(truncated_ds_rare) <- gsub("cDNA", "rare", row.names(truncated_ds_rare))
+rare <- as.data.frame(t(truncated_ds_rare))
+
+# merge
+com <- transform(merge(common, rare, by="row.names", all=TRUE), row.names=Row.names, Row.names=NULL)  
+com[is.na(com)] <- 0
+com <- t(com)
+com[1:5, 1:2]
+dim(com)
+
+```
+
+
+## Figure 1. Venn plot & PCoA based on Bray-Curtis
+```{r}
+
+
+# Bray Curtis
+dist <- vegdist(com, method="bray", binary=FALSE, diag=1) 
+str(dist)
+
+# Some distance measures may result in negative eigenvalues. In that case, add a correction:
+re <- pcoa(dist, correction="none", rn=NULL) # ?correction = "cailliez")
+str(re)
+
+group_info <- data.frame(row.names=row.names(re$vectors), 
+                         t(as.data.frame(strsplit(as.character(row.names(re$vectors)), "_"))))
+head(group_info)
+
+df <- data.frame(x=re$vectors[,1],
+                 y=re$vectors[,2],
+                 Biosphere=as.factor(group_info[,1]),
+                 Year=as.factor(group_info[,2]),
+                 Month=as.factor(group_info[,3]),
+                 replicates=as.factor(group_info[,4]))
+
+df$Year <- factor(df$Year, levels=c("0", "10", "40", "70", "110"))
+
+df$Month <- factor(df$Month, levels=c("5", "7", "9", "11"), 
+                   labels=c("May", "July", "September", "November"))
+
+df$Biosphere <- factor(df$Biosphere, levels=c("rare", "common"), labels=c("Rare ", "Common")) 
+
+str(df)
+
+(f2 <- ggplot(df, aes(x, y, shape=Biosphere, fill=Year))+
+    geom_point(size=4, alpha=0.7)+ 
+    labs(x=paste("PCoA1 (", round(re$values$Rel_corr_eig[1]*100, 2), "%)", sep=""), y=paste("PCoA2 (", round(re$values$Rel_corr_eig[2]*100, 2), "%)", sep=""), title = "")+
+    scale_fill_brewer(palette="Accent", guide=guide_legend(override.aes = list(shape=21)))+
+    scale_shape_manual(values=c(21, 22)) +
+    mytheme
+)
+
+# venn plot
+dev.off()
+temp <- venn.diagram(list(Rare = colnames(truncated_ds_rare_without_dominant),
+                          Common = colnames(truncated_ds_dominant)), 
+                     fill=c("#66c2a5", "#fc8d62"),
+                     alpha = 0.70, 
+                     cex=0.9, 
+                     cat.cex=0.9,
+                     ext.line.lwd = 2,
+                     compression = 'lzw',
+                     units = 'px',
+                     fontface = "bold",
+                     fontfamily = "sans",
+                     cat.fontface = "bold",
+                     cat.default.pos = "outer",
+                     cat.dist = c(-0.06, -0.035),
+                     cat.fontfamily = "sans",
+                     filename = NULL)
+grid.draw(temp)
+dev.off()
+
+(f1 <- draw.pairwise.venn((20171+2197), (122+2197), 2197, 
+                          category = c("Rare", "Common"), 
+                          height = 300, width = 300, 
+                          fontface = "bold", 
+                          fontfamily = "sans", 
+                          cat.fontface = "bold", 
+                          cat.fontfamily = "sans",
+                          fill=c("#66c2a5", "#fc8d62"),
+                          alpha = 0.7,
+                          cat.pos = c(0, 180), 
+                          euler.d = TRUE,
+                          ext.line.lwd = 1,
+                          cat.dist = rep(-0.1, 1)))
+grid.newpage()
+
+(f <- ggarrange(f1, f2, labels = c("B", "C"), widths = c(0.6, 1), ncol = 2))
+
+ggsave(paste("Figure_1_raw_", cutoff, ".pdf", sep = ""), width = 17, height = 8, units = "cm", f, scale = 1)
+
+```
+
+
+### define different types of rarity and commonness
+```{r}
+warning("Check whether rarefactiondepth (", rarefactiondepth, ") is the value your mean (i.e. 31500)?")
+
+# source the function to define different types of rarity and commonness
+source("types_of_rarity_commonness.R")
+
+# this step will take a while (for my dataset (22490 ASVs * 60 samples), it takes ca. 11 sec)
+system.time(ds_classified <- rarity_type(t(wholeDS), cutoff, rarefactiondepth))
+dim(ds_classified)
+ds_classified[1:5, 59:61]
+
+# summary the number of ASVs belong to each type of rarity and commonness: conditionally rare/common - CRC; permanently common - PC; permanently rare - PR; transiently rare - TR
+ds_classified$vector_category <- factor(ds_classified$vector_category)
+levels(ds_classified$vector_category)
+table(ds_classified$vector_category)
+
+# write.csv(ds_classified,  paste("feature_table_types_of_rarity_commonness", cutoff, "cutoff.csv", sep="_"))
+```
+
+
+### Figure 3 Types of rarity and commonness
+```{r}
+
+# plot theme
+mytheme <- theme_bw()+
+  theme(text = element_text(size=11),
+        panel.spacing = unit(0, "lines"),
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text = element_text(size=11, face = "bold"),
+        legend.box.background = element_rect(),
+        legend.title = element_text(size=10, face = "bold"),
+        legend.position = "right", 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.margin=unit(c(1, 0.5, 1, 0.5),"cm")) 
+
+# first define the summary function
+dstats <- function(x)(c(n=length(x), mean=mean(x), sd=sd(x), se=sd(x)/sqrt(length(x))))
+
+# custom colors
+my_palette = c(brewer.pal(8, "Pastel1")[c(6, 3, 2, 1)])
+
+# summarize relative abundance of each type of rarity and commonness
+df <- as.data.frame(t(com))
+df$vector_category <- ds_classified$vector_category[match(row.names(ds_classified), row.names(df))]
+dim(df)
+df[1:5, c(1, 120:121)]
+
+types_sum <- aggregate(df[, !(names(df) %in% "vector_category")], list(df$vector_category), sum)
+row.names(types_sum) <- types_sum$Group.1
+types_sum <- types_sum[, -1]
+types_sum <- t(types_sum)
+head(types_sum)
+
+group_info <- data.frame(row.names=rownames(types_sum),  t(as.data.frame(strsplit(as.character(row.names(types_sum)), "_"))))
+
+df <- data.frame(types_sum,
+                 Biosphere = as.factor(group_info[,1]),
+                 Year = as.factor(group_info[,2]),
+                 Month = as.factor(group_info[,3]),
+                 replicates = as.factor(group_info[,4]))
+
+df$Biosphere <- factor(df$Biosphere, levels = c("common", "rare"), labels = c("The common biosphere ", "The rare biosphere")) 
+
+df$Year <- factor(df$Year, levels=c("0", "10", "40", "70", "110"))
+
+df$Month <- factor(df$Month, levels=c("5", "7", "9", "11"), labels=c("M", "J", "S", "N"))
+
+df <- melt(df, id=c("Biosphere", "Year", "Month", "replicates"))
+
+# change to relative abundance
+df$value <- df$value*100/rarefactiondepth
+
+df$variable <- factor(df$variable, levels=c("PC", "CRC", "TR", "PR"),
+                      labels=c("Permanently common", "Conditionally common/rare", "Transiently rare", "Permanently rare"))
+
+data <- summaryBy(value ~ Biosphere + Year + Month + variable, data=df, FUN=dstats)
+head(data)
+
+# stacked-bar plot
+(f1 <- ggplot(data, aes(x=Month, y=value.mean, fill=variable)) + 
+    geom_bar(stat="identity", width=0.8, size = 0.1, colour="black") +
+    scale_fill_manual(values=my_palette) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, 100)) + 
+    facet_grid(Biosphere~Year, switch = "x", scales = "free_x") +
+    guides(fill=guide_legend(title="Types of rarity/commonness"))+
+    xlab("Stage of succession (Years)") +
+    ylab("Relative abundance (%)") +
+    mytheme)
+
+
+
+# summarize total number of ASVs of each type of rarity and commonness
+# set table as binary format
+df <- as.data.frame(decostand(t(com), "pa"))
+df$vector_category <- ds_classified$vector_category[match(row.names(ds_classified), row.names(df))]
+dim(df)
+df[1:5, c(1, 120:121)]
+
+types_sum <- aggregate(df[, !(names(df) %in% "vector_category")], list(df$vector_category), sum)
+row.names(types_sum) <- types_sum$Group.1
+types_sum <- types_sum[, -1]
+types_sum <- t(types_sum)
+head(types_sum)
+
+group_info <- data.frame(row.names=rownames(types_sum),  t(as.data.frame(strsplit(as.character(row.names(types_sum)), "_"))))
+
+df <- data.frame(types_sum,
+                 Biosphere = as.factor(group_info[,1]),
+                 Year = as.factor(group_info[,2]),
+                 Month = as.factor(group_info[,3]),
+                 replicates = as.factor(group_info[,4]))
+
+df$Biosphere <- factor(df$Biosphere, levels = c("common", "rare"), labels = c("The common biosphere ", "The rare biosphere")) 
+
+df$Year <- factor(df$Year, levels=c("0", "10", "40", "70", "110"))
+
+df$Month <- factor(df$Month, levels=c("5", "7", "9", "11"), labels=c("M", "J", "S", "N"))
+
+df <- melt(df, id=c("Biosphere", "Year", "Month", "replicates"))
+
+df$variable <- factor(df$variable, levels=c("PC", "CRC", "TR", "PR"),
+                      labels=c("Permanently common", "Conditionally common/rare", "Transiently rare", "Permanently rare"))
+
+data <- summaryBy(value ~ Biosphere + Year + Month + variable, data=df, FUN=dstats)
+head(data)
+
+# stacked-bar plot
+(f2 <- ggplot(data, aes(x=Month, y=value.mean, fill=variable)) + 
+    geom_bar(stat="identity", width=0.8, size = 0.1, colour="black") +
+    scale_fill_manual(values=my_palette) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(0, 2500)) +
+    facet_grid(Biosphere~Year, switch = "x", scales = "free_x") +
+    guides(fill=guide_legend(title="Types of rarity/commonness"))+
+    xlab("Stage of succession (Years)") +
+    ylab("Number of ASVs") +
+    mytheme)
+
+(f <- ggarrange(f1, f2, labels = c("A", "B"), common.legend = TRUE, legend = "right", ncol = 2))
+
+ggsave(paste("Figure_3_types_of_rarity_commonness_sn_ab", cutoff, "cutoff.pdf", sep = "_"), width = 16, height = 9, units = "cm", f, scale = 1.5)
+
+```
+
+## Session Info
+```{r}
+sessionInfo()
+```

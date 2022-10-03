@@ -18,8 +18,7 @@ Sample-specific rarity cutoffs
 
 Analysis for the rare and common biospheres
 * [Rare_biosphere.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/Rare_biosphere.R)
-* [SummarizeCommonnessTypes.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/SummarizeCommonnessTypes.R)
-* [SummarizeRarityTypes.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/SummarizeRarityTypes.R)
+* [types_of_rarity_commonness.R](https://github.com/Jia-Xiu/Jia_et_al_ISMECOMMS_2022/blob/master/types_of_rarity_commonness.R)
 
 Taxa summarize
 * [Taxa_summarize.R](https://github.com/Jia-Xiu/rare_biosphere_assembly_2020/blob/master/Taxa_summarize.R)

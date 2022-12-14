@@ -3,6 +3,8 @@
 # Modified by Xiu Jia 
 # Date: 01-09-2018
 
+# see new updates here https://github.com/Jia-Xiu/collaborations/blob/main/Araujo_et_al_2022/TruncateTable.R
+
 # sample-based cutoff (Gobet at al., 2010)
 TruncateTable<-function(dataset,cutoff,typem){
         # remove columns in the matrix for which the sum of the line is 0

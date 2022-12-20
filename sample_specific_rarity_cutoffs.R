@@ -2,6 +2,10 @@
 # Author: Xiu Jia
 # Date: 09-04-2019
 
+
+### Please find the recent updates in https://github.com/Jia-Xiu/collaborations/blob/main/Araujo_et_al_2022/TruncateTable.R 
+
+
 # load library
 library(vegan)
 

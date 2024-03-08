@@ -1,5 +1,5 @@
 # Unravelling the interplay of ecological processes shaping the bacterial rare biosphere
-The following is the scripts related to the manuscript: Unravelling the interplay of ecological processes shaping the bacterial rare biosphere, authored by Xiu Jia, Francisco Dini-Andreote and Joana Falcão Salles. For recent updates, please go to https://github.com/Jia-Xiu/collaborations/tree/main/Araujo_et_al_2022.
+The following is the scripts related to the manuscript: [Unravelling the interplay of ecological processes shaping the bacterial rare biosphere](https://www.nature.com/articles/s43705-022-00177-6), authored by Xiu Jia, Francisco Dini-Andreote and Joana Falcão Salles. For recent updates, please go to https://github.com/Jia-Xiu/collaborations/tree/main/Araujo_et_al_2022.
 
 ## Using QIIME2/2018.2 for cDNA sequences analysis
 Work at QIIME2/2018.2 environment, using the following script
